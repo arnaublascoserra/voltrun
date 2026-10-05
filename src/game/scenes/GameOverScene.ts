@@ -3,6 +3,7 @@ import { GAME_HEIGHT, GAME_WIDTH, SCENE_KEYS } from '../config/gameConfig';
 import { COLORS } from '../config/theme';
 import type { GameResult } from '../systems/GameSession';
 import { addBackdrop } from '../ui/Backdrop';
+import { DESIGN, fitDesign } from '../ui/viewport';
 import { MenuNavigator, NeonButton } from '../ui/Button';
 import { displayText, formatScore, glow, monoText } from '../ui/text';
 
@@ -18,6 +19,7 @@ export class GameOverScene extends Phaser.Scene {
   }
 
   create(): void {
+    fitDesign(this, DESIGN.portrait);
     const r = this.result;
     const cx = GAME_WIDTH / 2;
     addBackdrop(this, r.victory);

@@ -5,6 +5,7 @@ import { highScores } from '../services/highScores';
 import { settings } from '../services/settings';
 import { audio } from '../systems/AudioSystem';
 import { addBackdrop } from '../ui/Backdrop';
+import { DESIGN, fitDesign } from '../ui/viewport';
 import { MenuNavigator, NeonButton } from '../ui/Button';
 import { displayText, glow } from '../ui/text';
 
@@ -22,6 +23,7 @@ export class SettingsScene extends Phaser.Scene {
   }
 
   create(): void {
+    fitDesign(this, DESIGN.portrait);
     this.confirmReset = false;
     addBackdrop(this, false);
     const cx = GAME_WIDTH / 2;

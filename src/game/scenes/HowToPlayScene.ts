@@ -4,6 +4,7 @@ import { GAME_HEIGHT, GAME_WIDTH, SCENE_KEYS } from '../config/gameConfig';
 import { ENEMY_PROFILES } from '../config/enemies';
 import { COLORS } from '../config/theme';
 import { addBackdrop } from '../ui/Backdrop';
+import { DESIGN, fitDesign } from '../ui/viewport';
 import { MenuNavigator, NeonButton } from '../ui/Button';
 import { TEX } from '../ui/textures';
 import { displayText, glow, monoText } from '../ui/text';
@@ -19,6 +20,7 @@ export class HowToPlayScene extends Phaser.Scene {
   }
 
   create(): void {
+    fitDesign(this, DESIGN.portrait);
     addBackdrop(this, false);
     const s = BALANCE.score;
     glow(this.add.text(GAME_WIDTH / 2, 56, 'HOW TO PLAY', displayText(40)).setOrigin(0.5), COLORS.accent, 18);

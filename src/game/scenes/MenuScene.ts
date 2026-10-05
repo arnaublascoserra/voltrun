@@ -4,6 +4,7 @@ import { ENEMY_PROFILES } from '../config/enemies';
 import { COLORS } from '../config/theme';
 import { highScores } from '../services/highScores';
 import { addBackdrop } from '../ui/Backdrop';
+import { DESIGN, fitDesign } from '../ui/viewport';
 import { MenuNavigator, NeonButton } from '../ui/Button';
 import { TEX } from '../ui/textures';
 import { displayText, formatScore, glow, monoText } from '../ui/text';
@@ -17,6 +18,7 @@ export class MenuScene extends Phaser.Scene {
   }
 
   create(): void {
+    fitDesign(this, DESIGN.portrait);
     addBackdrop(this);
     const cx = GAME_WIDTH / 2;
 

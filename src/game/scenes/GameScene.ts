@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { BALANCE } from '../config/balance';
 import { getLevelParams } from '../config/difficulty';
-import { GAME_HEIGHT, GAME_WIDTH, LAYOUT, MAX_FRAME_DT_SEC, SCENE_KEYS } from '../config/gameConfig';
+import { LAYOUT, MAX_FRAME_DT_SEC, SCENE_KEYS } from '../config/gameConfig';
 import { COLORS } from '../config/theme';
 import { EnemyView, PlayerView } from '../entities/views';
 import { getMap } from '../maps';
@@ -20,6 +20,10 @@ import { Hud } from '../ui/Hud';
 import { MazeLayout } from '../ui/MazeLayout';
 import { renderMaze } from '../ui/MazeRenderer';
 import { TEX } from '../ui/textures';
+import { addGridBackground } from '../ui/Backdrop';
+import { DESIGN, fitDesign, fullscreenAvailable, pinDesign, preferredOrientation, toggleFullscreen } from '../ui/viewport';
+import type { DesignSize, Orientation } from '../ui/viewport';
+import type { Rect } from '../ui/MazeLayout';
 import { displayText, glow, monoText } from '../ui/text';
 import { SeededRandom } from '../utils/random';
 
@@ -33,6 +37,8 @@ export interface GameSceneData {
 
 const MAZE_TEXTURE_KEY = 'maze-current';
 const BANNER_ROWS_BELOW_EXIT = 5.4;
+/** Large enough to cover any canvas size around the design box. */
+const PAUSE_SHADE_SIZE = 8000;
 const CORE_PULSE_MS = 520;
 const CLEAR_FLASH_INTERVAL_SEC = 0.22;
 const GAME_OVER_DELAY_MS = 1600;
@@ -62,6 +68,8 @@ export class GameScene extends Phaser.Scene {
   private pauseLayer: Phaser.GameObjects.Container | null = null;
   private pauseNav: MenuNavigator | null = null;
   private startData: GameSceneData = {};
+  private orientation: Orientation = 'portrait';
+  private design: DesignSize = DESIGN.portrait;
 
   constructor() {
     super(SCENE_KEYS.game);
@@ -87,10 +95,19 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
+    // Phones always play in portrait; desktop gets the wide layout.
+    this.orientation = preferredOrientation();
+    this.design = DESIGN[this.orientation];
+    pinDesign(this, this.design);
+    fitDesign(this, this.design);
     this.cameras.main.setBackgroundColor(COLORS.background);
-    this.add.tileSprite(0, 0, GAME_WIDTH, GAME_HEIGHT, TEX.gridDot).setOrigin(0).setTileScale(8).setAlpha(0.35);
+    addGridBackground(this, 0.35);
 
-    this.hud = new Hud(this, () => this.togglePause(), () => this.toggleMute());
+    this.hud = new Hud(this, this.orientation, {
+      onPause: () => this.togglePause(),
+      onToggleMute: () => this.toggleMute(),
+      onToggleFullscreen: fullscreenAvailable() ? () => toggleFullscreen() : undefined,
+    });
     this.hud.setMuted(settings.get().muted);
     this.fx = new Effects(this);
     this.controls = new InputController({
@@ -165,12 +182,7 @@ export class GameScene extends Phaser.Scene {
     const map = getMap(params.mapId);
     this.world = new GameWorld(map, params, this.rng);
 
-    this.layout = new MazeLayout(map.cols, map.rows, {
-      x: LAYOUT.mazeMarginX,
-      y: LAYOUT.hudHeight,
-      width: GAME_WIDTH - LAYOUT.mazeMarginX * 2,
-      height: GAME_HEIGHT - LAYOUT.hudHeight - LAYOUT.footerHeight,
-    });
+    this.layout = new MazeLayout(map.cols, map.rows, this.mazeArea());
     this.mazeImage = renderMaze(this, this.world.grid, this.layout, MAZE_TEXTURE_KEY).setDepth(1);
 
     this.pickupSprites = new Array<Phaser.GameObjects.Image | null>(map.cols * map.rows).fill(null);
@@ -202,6 +214,25 @@ export class GameScene extends Phaser.Scene {
     this.hud.setLevel(this.session.level);
     this.hud.setMapName(map.name);
     this.enterReady(BALANCE.timing.readySec, `NIVEL ${this.session.level}`, map.name);
+  }
+
+  /** Where the maze goes inside the design box for the current layout. */
+  private mazeArea(): Rect {
+    const { width, height } = this.design;
+    if (this.orientation === 'landscape') {
+      return {
+        x: LAYOUT.sidePanelWidth,
+        y: LAYOUT.landscapeMazeMarginY,
+        width: width - LAYOUT.sidePanelWidth * 2,
+        height: height - LAYOUT.landscapeMazeMarginY * 2,
+      };
+    }
+    return {
+      x: LAYOUT.mazeMarginX,
+      y: LAYOUT.hudHeight,
+      width: width - LAYOUT.mazeMarginX * 2,
+      height: height - LAYOUT.hudHeight - LAYOUT.footerHeight,
+    };
   }
 
   private clearLevel(): void {
@@ -399,11 +430,11 @@ export class GameScene extends Phaser.Scene {
   }
 
   private playerX(): number {
-    return this.playerView?.sprite.x ?? GAME_WIDTH / 2;
+    return this.playerView?.sprite.x ?? this.design.width / 2;
   }
 
   private playerY(): number {
-    return this.playerView?.sprite.y ?? GAME_HEIGHT / 2;
+    return this.playerView?.sprite.y ?? this.design.height / 2;
   }
 
   // ───────────────────────────── pause / settings ─────────────────────────────
@@ -429,9 +460,11 @@ export class GameScene extends Phaser.Scene {
   }
 
   private showPauseMenu(): void {
-    const cx = GAME_WIDTH / 2;
-    const cy = GAME_HEIGHT / 2;
-    const shade = this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, COLORS.background, 0.82).setOrigin(0).setInteractive();
+    const cx = this.design.width / 2;
+    const cy = this.design.height / 2;
+    const shade = this.add
+      .rectangle(cx, cy, PAUSE_SHADE_SIZE, PAUSE_SHADE_SIZE, COLORS.background, 0.82)
+      .setInteractive();
     const title = glow(this.add.text(cx, cy - 170, 'PAUSED', displayText(48)).setOrigin(0.5), COLORS.accent, 18);
     const buttons = [
       new NeonButton(this, cx, cy - 60, 'RESUME', () => this.togglePause(), { color: COLORS.accentHex }),

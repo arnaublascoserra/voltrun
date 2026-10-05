@@ -3,6 +3,7 @@ import { GAME_HEIGHT, GAME_WIDTH, SCENE_KEYS } from '../config/gameConfig';
 import { COLORS } from '../config/theme';
 import { highScores } from '../services/highScores';
 import { addBackdrop } from '../ui/Backdrop';
+import { DESIGN, fitDesign } from '../ui/viewport';
 import { MenuNavigator, NeonButton } from '../ui/Button';
 import { displayText, formatScore, glow, monoText } from '../ui/text';
 
@@ -16,6 +17,7 @@ export class HighScoresScene extends Phaser.Scene {
   }
 
   create(): void {
+    fitDesign(this, DESIGN.portrait);
     addBackdrop(this, false);
     glow(this.add.text(GAME_WIDTH / 2, 70, 'HIGH SCORES', displayText(40, COLORS.gold)).setOrigin(0.5), COLORS.gold, 18);
 

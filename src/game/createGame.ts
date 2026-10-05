@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH } from './config/gameConfig';
 import { COLORS } from './config/theme';
 import { BootScene } from './scenes/BootScene';
 import { GameOverScene } from './scenes/GameOverScene';
@@ -8,16 +7,19 @@ import { HighScoresScene } from './scenes/HighScoresScene';
 import { HowToPlayScene } from './scenes/HowToPlayScene';
 import { MenuScene } from './scenes/MenuScene';
 import { SettingsScene } from './scenes/SettingsScene';
+import { computeViewSize } from './ui/viewport';
 
 export function createGame(parent: string): Phaser.Game {
+  // Canvas matches the window's aspect ratio; scenes centre their design box in it.
+  const view = computeViewSize(window.innerWidth, window.innerHeight);
   return new Phaser.Game({
     type: Phaser.AUTO,
     parent,
-    width: GAME_WIDTH,
-    height: GAME_HEIGHT,
+    width: view.width,
+    height: view.height,
     backgroundColor: COLORS.backgroundCss,
     scale: {
-      // Keeps the aspect ratio and fits any screen (desktop, tablet, phone).
+      // Scales the canvas to the window keeping its aspect ratio; Phaser alone centres it.
       mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,
     },

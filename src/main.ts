@@ -2,6 +2,7 @@ import './style.css';
 import { createGame } from './game/createGame';
 import { FONTS } from './game/config/theme';
 import { audio } from './game/systems/AudioSystem';
+import { initViewport, toggleFullscreen } from './game/ui/viewport';
 
 const FONT_TIMEOUT_MS = 2500;
 
@@ -15,6 +16,11 @@ async function loadFonts(): Promise<void> {
 
 void loadFonts().then(() => {
   const game = createGame('game');
+  initViewport(game);
+  // F toggles real fullscreen anywhere (needs a key press: browsers require a user gesture).
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'KeyF' && !e.repeat) toggleFullscreen();
+  });
   // Dev-only hook for debugging and automated checks from the browser console.
   if (import.meta.env.DEV) Object.assign(window, { __voltrunGame: game, __voltrunAudio: audio });
 });

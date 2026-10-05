@@ -32,9 +32,16 @@ Atajos sólo en desarrollo: `?level=5` empieza en el nivel 5 y `?seed=123` fija 
 | Moverse | Flechas o WASD | Deslizar el dedo en cualquier parte de la pantalla |
 | Pausa | P o Esc | Botón ⏸ |
 | Silencio | M | Botón 🔊 |
+| Pantalla completa | F o botón ⛶ | Botón ⛶ (si el navegador lo permite; en iPhone no) |
 | Menús | ↑/↓ + Enter, Esc para volver | Tocar los botones |
 
 El movimiento tiene **input buffering**: si pulsas una dirección antes de llegar al cruce, el giro se guarda y se aplica al llegar. También se acepta un giro pulsado un poco tarde y puedes dar media vuelta al instante.
+
+## Pantalla y orientación
+
+- **Ordenador:** diseño horizontal a pantalla completa. El laberinto ocupa toda la altura en el centro, la puntuación va en el panel izquierdo y las vidas y los botones en el derecho.
+- **Móvil y tablet** (pantallas táctiles): siempre en vertical, ocupando toda la pantalla. Si un móvil se pone en horizontal, aparece un aviso para girarlo.
+- El lienzo adopta siempre la proporción de la ventana, así que el fondo llena la pantalla sin bandas negras ni recortes. Cada escena se dibuja en una "caja de diseño" fija (672×960 en vertical y 1400×960 en horizontal) que se centra en él (`src/game/ui/viewport.ts`). Al redimensionar la ventana todo se recoloca, incluso en mitad de una partida.
 
 ## Reglas
 
